@@ -1,6 +1,7 @@
 # ofxLibigl
 ### libigl - A simple C++ geometry processing library
 Will support both Libigl-legacy and Libigl as we go further
+Currently using d4b67260855fe901541f2949ff21819147c08a4d tree on master branch
 
 ![](https://github.com/libigl/libigl/raw/5ff6387765fa85ca46f1a6222728e35e2b8b8961/libigl-teaser.png)
 
