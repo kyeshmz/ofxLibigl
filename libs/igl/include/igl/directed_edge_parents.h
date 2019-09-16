@@ -13,7 +13,7 @@
 
 namespace igl
 {
-  // Recover "parents" (preceding edges) in a tree given just directed edges.
+  // Recover "parents" (preceeding edges) in a tree given just directed edges.
   //
   // Inputs:
   //   E  #E by 2 list of directed edges

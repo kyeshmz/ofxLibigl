@@ -67,7 +67,7 @@ IGL_INLINE void igl::exterior_edges(
   {
     int e = 0;
     const size_t nue = uE.rows();
-    // Append each unique edge with a non-zero amount of signed occurrences
+    // Append each unique edge with a non-zero amount of signed occurances
     for(size_t ue = 0; ue<nue; ue++)
     {
       const int count = counts(ue);

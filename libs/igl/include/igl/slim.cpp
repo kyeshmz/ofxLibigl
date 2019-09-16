@@ -34,14 +34,6 @@
 #include <Eigen/SparseCholesky>
 #include <Eigen/IterativeLinearSolvers>
 
-#include "Timer.h"
-#include "sparse_cached.h"
-#include "AtA_cached.h"
-
-#ifdef CHOLMOD
-#include <Eigen/CholmodSupport>
-#endif
-
 namespace igl
 {
   namespace slim
@@ -50,8 +42,8 @@ namespace igl
     IGL_INLINE void compute_surface_gradient_matrix(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F,
                                                     const Eigen::MatrixXd &F1, const Eigen::MatrixXd &F2,
                                                     Eigen::SparseMatrix<double> &D1, Eigen::SparseMatrix<double> &D2);
-    IGL_INLINE void buildA(igl::SLIMData& s, std::vector<Eigen::Triplet<double> > & IJV);
-    IGL_INLINE void buildRhs(igl::SLIMData& s, const Eigen::SparseMatrix<double> &A);
+    IGL_INLINE void buildA(igl::SLIMData& s, Eigen::SparseMatrix<double> &A);
+    IGL_INLINE void buildRhs(igl::SLIMData& s, const Eigen::SparseMatrix<double> &At);
     IGL_INLINE void add_soft_constraints(igl::SLIMData& s, Eigen::SparseMatrix<double> &L);
     IGL_INLINE double compute_energy(igl::SLIMData& s, Eigen::MatrixXd &V_new);
     IGL_INLINE double compute_soft_const_energy(igl::SLIMData& s,
@@ -403,12 +395,8 @@ namespace igl
       Eigen::SparseMatrix<double> L;
       build_linear_system(s,L);
 
-      igl::Timer t;
-      
-      //t.start();
       // solve
       Eigen::VectorXd Uc;
-#ifndef CHOLMOD
       if (s.dim == 2)
       {
         SimplicialLDLT<Eigen::SparseMatrix<double> > solver;
@@ -418,21 +406,13 @@ namespace igl
       { // seems like CG performs much worse for 2D and way better for 3D
         Eigen::VectorXd guess(uv.rows() * s.dim);
         for (int i = 0; i < s.v_num; i++) for (int j = 0; j < s.dim; j++) guess(uv.rows() * j + i) = uv(i, j); // flatten vector
-        ConjugateGradient<Eigen::SparseMatrix<double>, Lower | Upper> cg;
-        cg.setTolerance(1e-8);
-        cg.compute(L);
-        Uc = cg.solveWithGuess(s.rhs, guess);
+        ConjugateGradient<Eigen::SparseMatrix<double>, Eigen::Lower | Upper> solver;
+        solver.setTolerance(1e-8);
+        Uc = solver.compute(L).solveWithGuess(s.rhs, guess);
       }
-#else
-        CholmodSimplicialLDLT<Eigen::SparseMatrix<double> > solver;
-        Uc = solver.compute(L).solve(s.rhs);
-#endif
+
       for (int i = 0; i < s.dim; i++)
         uv.col(i) = Uc.block(i * s.v_n, 0, s.v_n, 1);
-
-      // t.stop();
-      // std::cerr << "solve: " << t.getElapsedTime() << std::endl;
-
     }
 
 
@@ -498,60 +478,20 @@ namespace igl
     IGL_INLINE void build_linear_system(igl::SLIMData& s, Eigen::SparseMatrix<double> &L)
     {
       // formula (35) in paper
-      std::vector<Eigen::Triplet<double> > IJV;
-      
-      #ifdef SLIM_CACHED
-      buildA(s,IJV);
-      if (s.A.rows() == 0)
-      {
-        s.A = Eigen::SparseMatrix<double>(s.dim * s.dim * s.f_n, s.dim * s.v_n);
-        igl::sparse_cached_precompute(IJV,s.A_data,s.A);
-      }
-      else
-        igl::sparse_cached(IJV,s.A_data,s.A);
-      #else
       Eigen::SparseMatrix<double> A(s.dim * s.dim * s.f_n, s.dim * s.v_n);
-      buildA(s,IJV);
-      A.setFromTriplets(IJV.begin(),IJV.end());
-      A.makeCompressed();
-      #endif
+      buildA(s,A);
 
-      #ifdef SLIM_CACHED
-      #else
       Eigen::SparseMatrix<double> At = A.transpose();
       At.makeCompressed();
-      #endif
 
-      #ifdef SLIM_CACHED
-      Eigen::SparseMatrix<double> id_m(s.A.cols(), s.A.cols());
-      #else
-      Eigen::SparseMatrix<double> id_m(A.cols(), A.cols());
-      #endif
-
+      Eigen::SparseMatrix<double> id_m(At.rows(), At.rows());
       id_m.setIdentity();
 
       // add proximal penalty
-      #ifdef SLIM_CACHED
-      s.AtA_data.W = s.WGL_M;
-      if (s.AtA.rows() == 0)
-        igl::AtA_cached_precompute(s.A,s.AtA_data,s.AtA);
-      else
-        igl::AtA_cached(s.A,s.AtA_data,s.AtA);
-
-      L = s.AtA + s.proximal_p * id_m; //add also a proximal 
-      L.makeCompressed();
-
-      #else
       L = At * s.WGL_M.asDiagonal() * A + s.proximal_p * id_m; //add also a proximal term
       L.makeCompressed();
-      #endif
 
-      #ifdef SLIM_CACHED
-      buildRhs(s, s.A);
-      #else
-      buildRhs(s, A);
-      #endif
-
+      buildRhs(s, At);
       Eigen::SparseMatrix<double> OldL = L;
       add_soft_constraints(s,L);
       L.makeCompressed();
@@ -717,9 +657,10 @@ namespace igl
       return energy;
     }
 
-    IGL_INLINE void buildA(igl::SLIMData& s, std::vector<Eigen::Triplet<double> > & IJV)
+    IGL_INLINE void buildA(igl::SLIMData& s, Eigen::SparseMatrix<double> &A)
     {
       // formula (35) in paper
+      std::vector<Eigen::Triplet<double> > IJV;
       if (s.dim == 2)
       {
         IJV.reserve(4 * (s.Dx.outerSize() + s.Dy.outerSize()));
@@ -839,9 +780,10 @@ namespace igl
           }
         }
       }
+      A.setFromTriplets(IJV.begin(), IJV.end());
     }
 
-    IGL_INLINE void buildRhs(igl::SLIMData& s, const Eigen::SparseMatrix<double> &A)
+    IGL_INLINE void buildRhs(igl::SLIMData& s, const Eigen::SparseMatrix<double> &At)
     {
       Eigen::VectorXd f_rhs(s.dim * s.dim * s.f_n);
       f_rhs.setZero();
@@ -888,7 +830,7 @@ namespace igl
         for (int j = 0; j < s.v_n; j++)
           uv_flat(s.v_n * i + j) = s.V_o(j, i);
 
-      s.rhs = (f_rhs.transpose() * s.WGL_M.asDiagonal() * A).transpose() + s.proximal_p * uv_flat;
+      s.rhs = (At * s.WGL_M.asDiagonal() * f_rhs + s.proximal_p * uv_flat);
     }
 
   }

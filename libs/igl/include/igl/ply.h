@@ -72,15 +72,14 @@ properly to target OSs with binary files.
 #ifndef __PLY_H__
 #define __PLY_H__
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
-
-namespace igl {
-    namespace ply {
     
 #define PLY_ASCII         1      /* ascii PLY file */
 #define PLY_BINARY_BE     2      /* binary PLY file, big endian */
@@ -106,8 +105,6 @@ namespace igl {
 
 #define  PLY_SCALAR  0
 #define  PLY_LIST    1
-
-
 
 
 typedef struct PlyProperty {    /* description of a property */
@@ -232,7 +229,7 @@ inline PlyProperty **ply_get_element_description(PlyFile *, const char *, int*, 
 inline void ply_get_element_setup( PlyFile *, const char *, int, PlyProperty *);
 inline void ply_get_property(PlyFile *, const char *, PlyProperty *);
 inline PlyOtherProp *ply_get_other_properties(PlyFile *, const char *, int);
-inline void ply_get_element(PlyFile *, void *, int *);
+inline void ply_get_element(PlyFile *, void *);
 inline char **ply_get_comments(PlyFile *, int *);
 inline char **ply_get_obj_info(PlyFile *, int *);
 inline void ply_close(PlyFile *);
@@ -246,8 +243,9 @@ inline void ply_describe_other_properties(PlyFile *, PlyOtherProp *, int);
 inline int equal_strings(const char *, const char *);
 
 
+#ifdef __cplusplus
 }
-}
+#endif
 #endif /* !__PLY_H__ */
 /*
 
@@ -324,11 +322,6 @@ properly to target OSs with binary files.
 #include <math.h>
 #include <string.h>
 //#include "ply.h"
-
-
-namespace igl {
-    namespace ply {
-
 
 // Use unnamed namespace to avoid duplicate symbols
 /*
@@ -1616,11 +1609,10 @@ inline PlyOtherElems *ply_get_other_element (
                          offsetof(OtherData,other_props));
 
   /* grab all these elements */
-  int native_binary_type = get_native_binary_type2();
   for (i = 0; i < other->elem_count; i++) {
     /* grab and element from the file */
     other->other_data[i] = (OtherData *) malloc (sizeof (OtherData));
-    ply_get_element (plyfile, (void *) other->other_data[i], &native_binary_type);
+    ply_get_element (plyfile, (void *) other->other_data[i]);
   }
 
   /* return pointer to the other elements data */
@@ -2257,7 +2249,7 @@ inline char **get_words(FILE *fp, int *nwords, char **orig_line)
   }
 
   /* convert line-feed and tabs into spaces */
-  /* (this guarantees that there will be a space before the */
+  /* (this guarentees that there will be a space before the */
   /*  null character at the end of the string) */
 
   str[BIG_STRING-2] = ' ';
@@ -2357,7 +2349,7 @@ char **get_words(FILE *fp, int *nwords, char **orig_line)
   }
 
   // convert line-feed and tabs into spaces  
-  // (this guarantees that there will be a space before the  
+  // (this guarentees that there will be a space before the  
   //  null character at the end of the string)  
 
   str[BIG_STRING-2] = ' ';
@@ -2376,7 +2368,7 @@ char **get_words(FILE *fp, int *nwords, char **orig_line)
     }
     else if (*ptr == '\r') {
       *ptr = '\0';
-      *ptr2 = '\0'; //note don't break yet, on a pc \r is followed by \n
+      *ptr2 = '\0'; //note dont break yet, on a pc \r is followed by \n
     }
   }
 
@@ -3163,6 +3155,5 @@ inline char *my_alloc(int size, int lnum, const char *fe)
   return (ptr);
 }
 
-}
-}
+
 #endif

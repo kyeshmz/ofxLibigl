@@ -23,16 +23,15 @@ IGL_INLINE void igl::adjacency_matrix(
   typedef Triplet<T> IJV;
   vector<IJV > ijv;
   ijv.reserve(F.size()*2);
-  // Loop over **simplex** (i.e., **not quad**)
+  // Loop over faces
   for(int i = 0;i<F.rows();i++)
   {
-    // Loop over this **simplex**
+    // Loop over this face
     for(int j = 0;j<F.cols();j++)
-    for(int k = j+1;k<F.cols();k++)
     {
       // Get indices of edge: s --> d
       Index s = F(i,j);
-      Index d = F(i,k);
+      Index d = F(i,(j+1)%F.cols());
       ijv.push_back(IJV(s,d,1));
       ijv.push_back(IJV(d,s,1));
     }

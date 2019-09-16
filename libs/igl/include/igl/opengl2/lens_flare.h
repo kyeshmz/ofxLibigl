@@ -21,7 +21,7 @@ namespace igl
     struct Flare{
       int type;             /* flare texture index, 0..5 */
       float scale;
-      float loc;            /* position on axis */
+      float loc;            /* postion on axis */
       float color[3];
       Flare():
         type(-1),

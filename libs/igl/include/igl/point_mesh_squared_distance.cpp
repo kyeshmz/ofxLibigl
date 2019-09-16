@@ -7,7 +7,6 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 #include "point_mesh_squared_distance.h"
 #include "AABB.h"
-#include <cassert>
 
 template <
   typename DerivedP,
@@ -30,7 +29,6 @@ IGL_INLINE void igl::point_mesh_squared_distance(
   switch(dim)
   {
     default:
-      assert(false && "Unsupported dim");
       // fall-through and pray
     case 3:
     {

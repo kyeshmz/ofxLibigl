@@ -118,11 +118,10 @@ IGL_INLINE bool igl::copyleft::cgal::propagate_winding_numbers(
 #endif
 
   bool valid = true;
-  // https://github.com/libigl/libigl/issues/674
-  if (!igl::piecewise_constant_winding_number(F, uE, uE2E)) 
+  if (!piecewise_constant_winding_number(F, uE, uE2E)) 
   {
-    assert(false && "Input mesh is not PWN");
-    std::cerr << "Input mesh is not PWN!" << std::endl;
+    assert(false && "Input mesh is not orientable");
+    std::cerr << "Input mesh is not orientable!" << std::endl;
     valid = false;
   }
 

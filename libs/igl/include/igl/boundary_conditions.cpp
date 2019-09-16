@@ -146,7 +146,7 @@ IGL_INLINE bool igl::boundary_conditions(
     bc(bim[bci[i]],bcj[i]) = bcv[i];
   }
 
-  // Normalize across rows so that conditions sum to one
+  // Normalize accross rows so that conditions sum to one
   for(i = 0;i<bc.rows();i++)
   {
     double sum = bc.row(i).sum();

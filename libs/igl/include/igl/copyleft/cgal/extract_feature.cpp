@@ -7,8 +7,7 @@
 // obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "extract_feature.h"
-#include "../../unique_edge_map.h"
-#include "../../PI.h"
+#include <igl/unique_edge_map.h>
 #include <CGAL/Kernel/global_functions.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 
@@ -56,7 +55,7 @@ IGL_INLINE void igl::copyleft::cgal::extract_feature(
   const size_t num_faces = F.rows();
   // NOTE: CGAL's definition of dihedral angle measures the angle between two
   // facets instead of facet normals.
-  const double cos_tol = cos(igl::PI - tol);
+  const double cos_tol = cos(M_PI - tol);
   std::vector<size_t> result; // Indices into uE
 
   auto is_non_manifold = [&uE2E](size_t ei) -> bool {

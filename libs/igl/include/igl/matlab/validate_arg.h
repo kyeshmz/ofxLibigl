@@ -16,9 +16,9 @@ namespace igl
     // Throw an error if arg i+1 is not a scalar
     //
     // Inputs:
-    //   i  index of current argument
+    //   i  index of current arguement
     //   nrhs  total number of arguments
-    //   prhs  pointer to arguments array
+    //   prhs  pointer to arguements array
     //   name   name of current argument
     IGL_INLINE void validate_arg_scalar(
       const int i, const int nrhs, const mxArray * prhs[], const char * name);

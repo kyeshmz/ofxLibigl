@@ -10,14 +10,8 @@
 // Copyright Denis Kovacs 4/10/08
 #include "print_shader_info_log.h"
 #include <cstdio>
-IGL_INLINE GLuint igl::opengl::load_shader(
-  const std::string & src,const GLenum type)
+IGL_INLINE GLuint igl::opengl::load_shader(const char *src,const GLenum type)
 {
-  if(src.empty())
-  {
-    return (GLuint) 0;
-  }
-
   GLuint s = glCreateShader(type);
   if(s == 0)
   {
@@ -25,8 +19,7 @@ IGL_INLINE GLuint igl::opengl::load_shader(
     return 0;
   }
   // Pass shader source string
-  const char *c = src.c_str();
-  glShaderSource(s, 1, &c, NULL);
+  glShaderSource(s, 1, &src, NULL);
   glCompileShader(s);
   // Print info log (if any)
   igl::opengl::print_shader_info_log(s);

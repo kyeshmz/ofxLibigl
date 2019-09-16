@@ -35,10 +35,10 @@ IGL_INLINE void igl::cotmatrix_entries(
     case 3:
     {
       // Triangles
-      //Compute Squared Edge lengths 
+      //Compute Squared Edge lenghts 
       Matrix<typename DerivedC::Scalar,Dynamic,3> l2;
       igl::squared_edge_lengths(V,F,l2);
-      //Compute Edge lengths 
+      //Compute Edge lenghts 
       Matrix<typename DerivedC::Scalar,Dynamic,3> l;
       l = l2.array().sqrt();
       

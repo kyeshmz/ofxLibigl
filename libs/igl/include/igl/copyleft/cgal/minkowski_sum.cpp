@@ -106,7 +106,6 @@ IGL_INLINE void igl::copyleft::cgal::minkowski_sum(
     vJ[ee].resize(vG[ee].rows(),2);
     vJ[ee].col(0) = eJ.array() + (FA.rows()+1);
     vJ[ee].col(1).setConstant(ee);
-    offsets[ee+1] = offsets[ee] + vW[ee].rows();
   }
   // Combine meshes
   int n=0,m=0;
@@ -142,7 +141,7 @@ IGL_INLINE void igl::copyleft::cgal::minkowski_sum(
       W,
       G,
       SJ);
-    slice(DerivedJ(J),SJ,1,J);
+    J = slice(DerivedJ(J),SJ,1);
   }
 }
 
