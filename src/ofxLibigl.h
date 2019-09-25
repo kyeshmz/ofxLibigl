@@ -1,3 +1,7 @@
+#ifndef ofxLibigl_h
+#define ofxLibigl_h
+#pragma once
+
 #include <igl/readOFF.h>
 #include <igl/cotmatrix.h>
 #include <igl/all_edges.h>
@@ -10,6 +14,7 @@
 #include <igl/get_seconds.h>
 #include <igl/edges.h>
 
+
 #include <igl/upsample.h>
 #include <igl/per_face_normals.h>
 #include <igl/per_vertex_normals.h>
@@ -21,4 +26,7 @@
 #include <igl/bounding_box_diagonal.h>
 #include <igl/massmatrix.h>
 
+
+
 //#include <igl/viewer/Viewer.h>
+#endif
